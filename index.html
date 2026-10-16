@@ -382,7 +382,7 @@
                 </div>
 
                 <a
-                  href="https://github.com/"
+                  href="https://github.com/SriramJ03/FlipMyCart"
                   target="_blank"
                   rel="noopener noreferrer"
                   class="project-link"
@@ -418,7 +418,7 @@
                 </div>
 
                 <a
-                  href="https://github.com/"
+                  href="https://github.com/SriramJ03/water-notification-system"
                   target="_blank"
                   rel="noopener noreferrer"
                   class="project-link"
@@ -454,7 +454,7 @@
                 </div>
 
                 <a
-                  href="https://github.com/"
+                  href="https://github.com/SriramJ03"
                   target="_blank"
                   rel="noopener noreferrer"
                   class="project-link"
@@ -489,7 +489,7 @@
                 </div>
 
                 <a
-                  href="https://github.com/"
+                  href="https://github.com/SriramJ03"
                   target="_blank"
                   rel="noopener noreferrer"
                   class="project-link"
@@ -524,7 +524,7 @@
                 </div>
 
                 <a
-                  href="https://github.com/"
+                  href="https://github.com/SriramJ03"
                   target="_blank"
                   rel="noopener noreferrer"
                   class="project-link"
@@ -636,7 +636,7 @@
         <div class="row justify-content-center">
           <div class="col-lg-8">
             <div class="contact-card">
-              <form id="contactForm" novalidate>
+              <form id="contactForm" action="https://formspree.io/f/mwlvajap" method="POST" novalidate>
                 <div class="row g-3">
                   <!-- Name -->
                   <div class="col-md-6">
@@ -646,6 +646,8 @@
                       type="text"
                       class="form-control"
                       id="name"
+                      name="name"
+                      minlength="2"
                       placeholder="Enter your name"
                       required
                     />
@@ -663,6 +665,7 @@
                       type="email"
                       class="form-control"
                       id="email"
+                      name="email"
                       placeholder="Enter your email"
                       required
                     />
@@ -680,6 +683,7 @@
                       type="text"
                       class="form-control"
                       id="subject"
+                      name="subject"
                       placeholder="Enter the subject"
                       required
                     />
@@ -694,6 +698,8 @@
                     <textarea
                       class="form-control"
                       id="message"
+                      name="message"
+                      minlength="10"
                       rows="5"
                       placeholder="Write your message"
                       required
@@ -702,6 +708,25 @@
                     <div class="invalid-feedback">
                       Please enter a message of at least 10 characters.
                     </div>
+                  </div>
+
+                  <!-- Formspree email subject -->
+                  <input
+                    type="hidden"
+                    name="_subject"
+                    value="New Portfolio Contact Message"
+                  />
+
+                  <!-- Honeypot spam protection: keep this field empty -->
+                  <div class="d-none" aria-hidden="true">
+                    <label for="website">Leave this field empty</label>
+                    <input
+                      type="text"
+                      id="website"
+                      name="_gotcha"
+                      tabindex="-1"
+                      autocomplete="off"
+                    />
                   </div>
 
                   <!-- Submit -->

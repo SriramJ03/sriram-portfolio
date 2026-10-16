@@ -1,85 +1,214 @@
+
+// ================= CONTACT FORM: VALIDATION + FORMSPREE =================
+
 const contactForm = document.getElementById("contactForm");
 const formStatus = document.getElementById("formStatus");
 
+// Your Formspree endpoint
+const FORMSPREE_ENDPOINT = "https://formspree.io/f/mwlvajap";
+
 // Automatically display the current year
-document.getElementById("year").textContent = new Date().getFullYear();
+const yearElement = document.getElementById("year");
 
-// Contact Form Validation
-contactForm.addEventListener("submit", function (event) {
-  event.preventDefault();
+if (yearElement) {
+  yearElement.textContent = new Date().getFullYear();
+}
 
-  const name = document.getElementById("name");
-  const email = document.getElementById("email");
-  const subject = document.getElementById("subject");
-  const message = document.getElementById("message");
+// Contact form submission
+if (contactForm && formStatus) {
+  contactForm.addEventListener("submit", async function (event) {
+    event.preventDefault();
 
-  // Reset previous validation messages
-  formStatus.textContent = "";
-  formStatus.className = "text-center";
-  contactForm.classList.add("was-validated");
+    const name = document.getElementById("name");
+    const email = document.getElementById("email");
+    const subject = document.getElementById("subject");
+    const message = document.getElementById("message");
 
-  // Validate the name
-  const nameValid = name.value.trim().length >= 2;
-  name.setCustomValidity(nameValid ? "" : "Enter at least 2 characters.");
+    if (!name || !email || !subject || !message) {
+      formStatus.textContent =
+        "Something went wrong with the form. Please try again later.";
+      formStatus.className = "text-center text-danger";
+      return;
+    }
 
-  // Validate the email
-  const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  const emailValid = emailPattern.test(email.value.trim());
-  email.setCustomValidity(emailValid ? "" : "Enter a valid email.");
+    // Reset previous status
+    formStatus.textContent = "";
+    formStatus.className = "text-center";
 
-  // Validate the subject
-  const subjectValid = subject.value.trim().length > 0;
-  subject.setCustomValidity(subjectValid ? "" : "Subject is required.");
+    contactForm.classList.add("was-validated");
 
-  // Validate the message
-  const messageValid = message.value.trim().length >= 10;
-  message.setCustomValidity(
-    messageValid ? "" : "Enter at least 10 characters.",
-  );
+    // Validate name
+    const nameValid = name.value.trim().length >= 2;
 
-  // Check all form fields
-  if (!contactForm.checkValidity()) {
-    formStatus.textContent = "Please correct the highlighted fields.";
-    formStatus.classList.add("text-danger");
-    contactForm.reportValidity();
-    return;
-  }
+    name.setCustomValidity(
+      nameValid ? "" : "Enter at least 2 characters."
+    );
 
-  // Demo success: no backend or email service is connected
-  formStatus.textContent =
-    "Form validated successfully! This is a demo; no message was sent.";
-  formStatus.classList.add("text-success");
+    // Validate email
+    const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    const emailValid = emailPattern.test(email.value.trim());
 
-  contactForm.reset();
-  contactForm.classList.remove("was-validated");
+    email.setCustomValidity(
+      emailValid ? "" : "Enter a valid email address."
+    );
 
-  [name, email, subject, message].forEach(function (field) {
-    field.setCustomValidity("");
+    // Validate subject
+    const subjectValid = subject.value.trim().length > 0;
+
+    subject.setCustomValidity(
+      subjectValid ? "" : "Subject is required."
+    );
+
+    // Validate message
+    const messageValid = message.value.trim().length >= 10;
+
+    message.setCustomValidity(
+      messageValid ? "" : "Enter at least 10 characters."
+    );
+
+    // Stop if validation fails
+    if (!contactForm.checkValidity()) {
+      formStatus.textContent =
+        "Please correct the highlighted fields.";
+
+      formStatus.classList.add("text-danger");
+
+      contactForm.reportValidity();
+      return;
+    }
+
+    // Find submit button
+    const submitButton = contactForm.querySelector(
+      'button[type="submit"], input[type="submit"]'
+    );
+
+    const originalButtonHTML = submitButton
+      ? submitButton.innerHTML
+      : "";
+
+    if (submitButton) {
+      submitButton.disabled = true;
+
+      submitButton.innerHTML =
+        'Sending... <span class="spinner-border spinner-border-sm ms-2" aria-hidden="true"></span>';
+    }
+
+    try {
+      // Send form data to Formspree
+      const response = await fetch(FORMSPREE_ENDPOINT, {
+        method: "POST",
+        body: new FormData(contactForm),
+        headers: {
+          Accept: "application/json"
+        }
+      });
+
+      if (response.ok) {
+        formStatus.textContent =
+          "Thank you! Your message has been sent successfully.";
+
+        formStatus.className =
+          "text-center alert alert-success mt-3";
+
+        // Clear the form after successful submission
+        contactForm.reset();
+
+        contactForm.classList.remove("was-validated");
+
+        [name, email, subject, message].forEach(function (field) {
+          field.setCustomValidity("");
+        });
+      } else {
+        let errorMessage =
+          "Unable to send your message. Please try again.";
+
+        try {
+          const result = await response.json();
+
+          if (result.errors && result.errors.length > 0) {
+            errorMessage = result.errors
+              .map(function (error) {
+                return error.message;
+              })
+              .join(" ");
+          }
+        } catch (error) {
+          // Keep the default error message
+        }
+
+        formStatus.textContent = errorMessage;
+
+        formStatus.className =
+          "text-center alert alert-danger mt-3";
+      }
+    } catch (error) {
+      formStatus.textContent =
+        "Network error. Please check your internet connection and try again.";
+
+      formStatus.className =
+        "text-center alert alert-danger mt-3";
+    } finally {
+      // Restore the submit button
+      if (submitButton) {
+        submitButton.disabled = false;
+        submitButton.innerHTML = originalButtonHTML;
+      }
+    }
   });
-});
 
-// Back to Top Button
+  // Clear custom validation errors when the user edits a field
+  ["name", "email", "subject", "message"].forEach(function (fieldId) {
+    const field = document.getElementById(fieldId);
+
+    if (field) {
+      field.addEventListener("input", function () {
+        field.setCustomValidity("");
+      });
+    }
+  });
+}
+
+// ================= BACK TO TOP BUTTON =================
+
 const backToTop = document.getElementById("backToTop");
 
-window.addEventListener("scroll", function () {
-  backToTop.style.display = window.scrollY > 300 ? "block" : "none";
-});
+if (backToTop) {
+  // Set initial visibility
+  backToTop.style.display =
+    window.scrollY > 300 ? "block" : "none";
 
-backToTop.addEventListener("click", function () {
-  window.scrollTo({
-    top: 0,
-    behavior: "smooth",
+  // Show or hide on scroll
+  window.addEventListener("scroll", function () {
+    backToTop.style.display =
+      window.scrollY > 300 ? "block" : "none";
   });
-});
 
-// Close the mobile navigation menu after selecting a section
+  // Scroll smoothly to the top
+  backToTop.addEventListener("click", function () {
+    window.scrollTo({
+      top: 0,
+      behavior: "smooth"
+    });
+  });
+}
+
+// ================= MOBILE NAVIGATION =================
+
+// Close the mobile menu after selecting a section
 document.querySelectorAll("#navbarNav .nav-link").forEach(function (link) {
   link.addEventListener("click", function () {
     const navbar = document.getElementById("navbarNav");
-    const bsCollapse = bootstrap.Collapse.getInstance(navbar);
 
-    if (bsCollapse && navbar.classList.contains("show")) {
-      bsCollapse.hide();
+    if (
+      navbar &&
+      navbar.classList.contains("show") &&
+      typeof bootstrap !== "undefined"
+    ) {
+      const collapse =
+        bootstrap.Collapse.getInstance(navbar) ||
+        bootstrap.Collapse.getOrCreateInstance(navbar);
+
+      collapse.hide();
     }
   });
 });
